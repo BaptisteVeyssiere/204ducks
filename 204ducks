@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import	sys
+import	math
+
+def	function(a, ti):
+    return (a * math.exp(-ti) + (4 - 3 * a) * math.exp(-2 * ti) + (2 * a - 4) * math.exp(-4 * ti))
+
+def     function_time(a, tprob):
+    i = 1
+    h = 0.01
+    b = function(a, (h / 2))
+    prob = 4 * b * h / 6
+    while (prob < tprob and i < 10000):
+        b = function(a, i * h)
+        prob = 2 * b * h / 6 + prob
+        b = function(a, i * h + h / 2)
+        prob = 4 * b * h / 6 + prob
+        i = i + 1
+    res = h * i
+    return (res)
+
+def     have_duck_back(a):
+    res_min = -a * math.exp(0) - (4 - 3 * a) / 2 * math.exp(-2 * 0) - (2 * a - 4) / 4 * math.exp(-4 * 0)
+    res_max = -a * math.exp(-1) - (4 - 3 * a) / 2 * math.exp(-2 * 1) - (2 * a - 4) / 4 * math.exp(-4 * 1)
+    res = round((res_max - res_min) * 100, 1)
+    print ("percentage of ducks back after 1 minute: %.1f%%" %res)
+    res_max = -a * math.exp(-2) - (4 - 3 * a) / 2 * math.exp(-2 * 2) - (2 * a - 4) / 4 * math.exp(-4 * 2)
+    res = round((res_max - res_min) * 100, 1)
+    print ("percentage of ducks back after 2 minutes: %.1f%%" %res)
+
+def     have_time(a):
+    res = function_time(a, 0.5)
+    res_minute = int(res)
+    res_second = (res - res_minute) * 60
+    print ("time after which 50%% of the ducks are back: %dm %.2ds" %(res_minute, res_second))
+    res = function_time(a, 0.99)
+    res_minute = int(res)
+    res_second = (res - res_minute) * 60
+    print ("time after which 99%% of the ducks are back: %dm %.2ds" %(res_minute, res_second))
+
+def     have_mean(a):
+    n = 1
+    res = 0
+    var = 0
+    h = 0.01
+    while (n <= 100000):
+        ti = h * n
+        ti2 = ti + h / 2
+        fti = function(a, ti)
+        fti2 = function(a, ti2)
+        res = 2 * h * ti * fti + 4 * h * ti2 * fti2 + res
+        var = 2 * 0.01 * math.pow(ti, 2) * fti + 4 * h * math.pow(ti2, 2) * fti2 + var
+        n = n + 1
+    ti2 = h / 2
+    fti2 = function(a, ti2)
+    res = 4 * h * ti2 * fti2 + res
+    var = 4 * h * math.pow(ti, 2) * fti + 4 * h * math.pow(ti2, 2) * fti2 + var
+    res /= 6
+    var = math.sqrt(var / 6 - math.pow(res, 2))
+    res_minute = int(res)
+    res_second = round((res - res_minute) * 60)
+    print ("mean return time: %dm %ds" %(res_minute, res_second))
+    print ("standard deviation: %.3f" %var)
+
+argc = len(sys.argv)
+if (argc != 2):
+    print ("USAGE\n\t\t./204ducks a\n\nDESCRIPTION\n\t\ta    constant")
+    sys.exit(84)
+else:
+    if (sys.argv[1] == "-h"):
+        print ("USAGE\n\t\t./204ducks a\n\nDESCRIPTION\n\t\ta    constant")
+        sys.exit(84)
+    try:
+        if (float(sys.argv[1]) < 0 or float(sys.argv[1]) > 2.5):
+            print ("a must be between 0 and 2.5")
+            sys.exit(84)
+    except ValueError:
+        print ("a must be between 0 and 2.5")
+        sys.exit(84)
+    have_mean(float(sys.argv[1]))
+    have_time(float(sys.argv[1]))
+    have_duck_back(float(sys.argv[1]))
+    sys.exit(0)
